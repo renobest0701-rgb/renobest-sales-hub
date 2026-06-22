@@ -35,6 +35,8 @@ export const agentLinks: Record<string, string> = {
   email:     "", // メール作成AI（未設定）
   proposal:  "", // 提案資料制作AI Ver2026.10（未設定）
   overseas:  "https://chatgpt.com/g/g-6a3921e0fba48191bb6e0830a3841e66-renobest-hai-wai-gu-ke-dui-ying-ai", // 海外顧客対応AI
+  contract:  "https://chatgpt.com/g/g-6a3923e52a908191ae66f3727334e177-renobest-qi-yue-bi-yao-shu-lei-an-nei-ai", // 契約・必要書類案内AI
+  finance:   "https://chatgpt.com/g/g-6a3927ac4378819191885389590db053-renobest-zi-jin-ji-hua-zhu-fei-yong-an-nei-ai", // 資金計画・諸費用案内AI
 };
 
 export const agents: Agent[] = [
@@ -91,6 +93,18 @@ export const agents: Agent[] = [
     name: "海外顧客対応AI",
     description: "購入・売却・税金・登記・賃貸運用などを日本語・繁体字・簡体字・英語でLINE・メール・電話トーク作成",
     url: agentLinks.overseas,
+  },
+  {
+    id: "contract",
+    name: "契約・必要書類案内AI",
+    description: "不動産売買・賃貸・法人購入・海外顧客向けの必要書類・契約前確認事項・決済準備を案内",
+    url: agentLinks.contract,
+  },
+  {
+    id: "finance",
+    name: "資金計画・諸費用案内AI",
+    description: "購入諸費用・月々返済・投資収支・運営シミュレーションを顧客向けに分かりやすく説明",
+    url: agentLinks.finance,
   },
 ];
 
