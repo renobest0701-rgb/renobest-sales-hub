@@ -4,6 +4,7 @@ import { useState, useCallback } from "react";
 import CustomerForm from "@/components/CustomerForm";
 import AgentCard from "@/components/AgentCard";
 import PromptModal from "@/components/PromptModal";
+import LoginScreen, { isAuthenticated, logout } from "@/components/LoginScreen";
 import { CustomerForm as CustomerFormType, agents, generatePrompt } from "@/lib/agents";
 
 const STORAGE_KEY = "renobest-sales-hub-form";
@@ -41,10 +42,11 @@ function loadSavedForm(): CustomerFormType {
 }
 
 export default function Home() {
+  const [authed, setAuthed] = useState<boolean>(isAuthenticated);
   const [form, setForm] = useState<CustomerFormType>(loadSavedForm);
   const [modal, setModal] = useState<ModalState>(null);
 
-  // 入力変更 → localStorage 自動保存
+  // Hooks must all be declared before any early return
   const handleChange = useCallback((field: keyof CustomerFormType, value: string) => {
     setForm((prev) => {
       const next = { ...prev, [field]: value };
@@ -76,6 +78,15 @@ export default function Home() {
       localStorage.removeItem(STORAGE_KEY);
     } catch {}
   };
+
+  const handleLogout = () => {
+    logout();
+    setAuthed(false);
+  };
+
+  if (!authed) {
+    return <LoginScreen onSuccess={() => setAuthed(true)} />;
+  }
 
   return (
     <div style={{ minHeight: "100vh", background: "#F5F5F0" }}>
@@ -141,29 +152,52 @@ export default function Home() {
           </div>
         </div>
 
-        <button
-          onClick={handleReset}
-          style={{
-            height: "32px",
-            padding: "0 14px",
-            borderRadius: "6px",
-            border: "1px solid #444",
-            background: "transparent",
-            color: "#888",
-            fontSize: "12px",
-            cursor: "pointer",
-          }}
-          onMouseEnter={(e) => {
-            (e.currentTarget as HTMLButtonElement).style.color = "#FFFFFF";
-            (e.currentTarget as HTMLButtonElement).style.borderColor = "#FFFFFF";
-          }}
-          onMouseLeave={(e) => {
-            (e.currentTarget as HTMLButtonElement).style.color = "#888";
-            (e.currentTarget as HTMLButtonElement).style.borderColor = "#444";
-          }}
-        >
-          入力リセット
-        </button>
+        <div style={{ display: "flex", gap: "8px" }}>
+          <button
+            onClick={handleReset}
+            style={{
+              height: "32px",
+              padding: "0 14px",
+              borderRadius: "6px",
+              border: "1px solid #444",
+              background: "transparent",
+              color: "#888",
+              fontSize: "12px",
+              cursor: "pointer",
+            }}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.color = "#FFFFFF";
+              (e.currentTarget as HTMLButtonElement).style.borderColor = "#FFFFFF";
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.color = "#888";
+              (e.currentTarget as HTMLButtonElement).style.borderColor = "#444";
+            }}
+          >
+            入力リセット
+          </button>
+          <button
+            onClick={handleLogout}
+            style={{
+              height: "32px",
+              padding: "0 14px",
+              borderRadius: "6px",
+              border: "1px solid #9B7B2E",
+              background: "transparent",
+              color: "#C9A84C",
+              fontSize: "12px",
+              cursor: "pointer",
+            }}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.background = "rgba(201,168,76,0.1)";
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.background = "transparent";
+            }}
+          >
+            ログアウト
+          </button>
+        </div>
       </header>
 
       {/* Main */}
