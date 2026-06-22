@@ -5,25 +5,22 @@ import CustomerForm from "@/components/CustomerForm";
 import AgentCard from "@/components/AgentCard";
 import PromptModal from "@/components/PromptModal";
 import LoginScreen, { isAuthenticated, logout } from "@/components/LoginScreen";
-import { CustomerForm as CustomerFormType, agents, generatePrompt } from "@/lib/agents";
-
-const STORAGE_KEY = "renobest-sales-hub-form";
-
-const defaultForm: CustomerFormType = {
-  customerName: "",
-  customerType: "",
-  propertyName: "",
-  location: "",
-  purpose: "",
-  budget: "",
-  interestPoints: "",
-  concerns: "",
-  sentContent: "",
-  customerResponse: "",
-  lastContactDate: "",
-  nextAction: "",
-  notes: "",
-};
+import CustomerSelector from "@/components/CustomerSelector";
+import TodoPanel from "@/components/TodoPanel";
+import { agents, generatePrompt } from "@/lib/agents";
+import {
+  CustomerRecord,
+  loadRecords,
+  saveRecords,
+  loadActiveId,
+  saveActiveId,
+  createRecord,
+  updateRecord,
+  deleteRecord,
+  addTodo,
+  toggleTodo,
+  deleteTodo,
+} from "@/lib/storage";
 
 type ModalState = {
   agentId: string;
@@ -32,53 +29,119 @@ type ModalState = {
   agentUrl: string;
 } | null;
 
-function loadSavedForm(): CustomerFormType {
-  if (typeof window === "undefined") return defaultForm;
-  try {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) return { ...defaultForm, ...JSON.parse(saved) };
-  } catch {}
-  return defaultForm;
+function initRecords() {
+  return loadRecords();
+}
+
+function initActiveId(records: CustomerRecord[]) {
+  return loadActiveId(records);
 }
 
 export default function Home() {
-  const [authed, setAuthed] = useState<boolean>(isAuthenticated);
-  const [form, setForm] = useState<CustomerFormType>(loadSavedForm);
-  const [modal, setModal] = useState<ModalState>(null);
+  const [authed, setAuthed]   = useState<boolean>(isAuthenticated);
+  const [records, setRecords] = useState<CustomerRecord[]>(initRecords);
+  const [activeId, setActiveId] = useState<string>(() => initActiveId(loadRecords()));
+  const [modal, setModal]     = useState<ModalState>(null);
 
-  // Hooks must all be declared before any early return
-  const handleChange = useCallback((field: keyof CustomerFormType, value: string) => {
-    setForm((prev) => {
-      const next = { ...prev, [field]: value };
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-      } catch {}
-      return next;
-    });
-  }, []);
+  // アクティブレコード取得
+  const active = records.find((r) => r.id === activeId) ?? records[0];
 
+  // レコード更新 + 保存
+  const patchActive = useCallback(
+    (patch: Partial<Omit<CustomerRecord, "id">>) => {
+      setRecords((prev) => {
+        const next = updateRecord(prev, activeId, patch);
+        saveRecords(next);
+        return next;
+      });
+    },
+    [activeId]
+  );
+
+  // フォーム変更
+  const handleChange = useCallback(
+    (field: keyof CustomerRecord["form"], value: string) => {
+      if (!active) return;
+      patchActive({ form: { ...active.form, [field]: value } });
+    },
+    [active, patchActive]
+  );
+
+  // プロンプト生成
   const handleGenerate = useCallback(
     (agentId: string) => {
       const agent = agents.find((a) => a.id === agentId);
-      if (!agent) return;
+      if (!agent || !active) return;
       setModal({
         agentId,
         agentName: agent.name,
-        prompt: generatePrompt(agentId, form),
+        prompt: generatePrompt(agentId, active.form),
         agentUrl: agent.url,
       });
     },
-    [form]
+    [active]
   );
 
-  const handleReset = () => {
-    if (!confirm("入力内容をすべてリセットしますか？")) return;
-    setForm(defaultForm);
-    try {
-      localStorage.removeItem(STORAGE_KEY);
-    } catch {}
-  };
+  // 顧客切り替え
+  const handleSelect = useCallback((id: string) => {
+    setActiveId(id);
+    saveActiveId(id);
+  }, []);
 
+  // 新規顧客作成
+  const handleCreate = useCallback(() => {
+    const rec = createRecord();
+    setRecords((prev) => {
+      const next = [...prev, rec];
+      saveRecords(next);
+      return next;
+    });
+    setActiveId(rec.id);
+    saveActiveId(rec.id);
+  }, []);
+
+  // 顧客削除
+  const handleDelete = useCallback(
+    (id: string) => {
+      setRecords((prev) => {
+        const next = deleteRecord(prev, id);
+        saveRecords(next);
+        // 削除後は先頭へ
+        const newActive = next[0]?.id ?? "";
+        setActiveId(newActive);
+        saveActiveId(newActive);
+        return next;
+      });
+    },
+    []
+  );
+
+  // ToDo操作
+  const handleAddTodo = useCallback(
+    (text: string) => {
+      if (!active) return;
+      patchActive({ todos: addTodo(active.todos, text) });
+    },
+    [active, patchActive]
+  );
+
+  const handleToggleTodo = useCallback(
+    (todoId: string) => {
+      if (!active) return;
+      patchActive({ todos: toggleTodo(active.todos, todoId) });
+    },
+    [active, patchActive]
+  );
+
+  const handleDeleteTodo = useCallback(
+    (todoId: string) => {
+      if (!active) return;
+      patchActive({ todos: deleteTodo(active.todos, todoId) });
+    },
+    [active, patchActive]
+  );
+
+  // ログアウト
   const handleLogout = () => {
     logout();
     setAuthed(false);
@@ -87,6 +150,8 @@ export default function Home() {
   if (!authed) {
     return <LoginScreen onSuccess={() => setAuthed(true)} />;
   }
+
+  if (!active) return null;
 
   return (
     <div style={{ minHeight: "100vh", background: "#F5F5F0" }}>
@@ -152,58 +217,50 @@ export default function Home() {
           </div>
         </div>
 
-        <div style={{ display: "flex", gap: "8px" }}>
-          <button
-            onClick={handleReset}
-            style={{
-              height: "32px",
-              padding: "0 14px",
-              borderRadius: "6px",
-              border: "1px solid #444",
-              background: "transparent",
-              color: "#888",
-              fontSize: "12px",
-              cursor: "pointer",
-            }}
-            onMouseEnter={(e) => {
-              (e.currentTarget as HTMLButtonElement).style.color = "#FFFFFF";
-              (e.currentTarget as HTMLButtonElement).style.borderColor = "#FFFFFF";
-            }}
-            onMouseLeave={(e) => {
-              (e.currentTarget as HTMLButtonElement).style.color = "#888";
-              (e.currentTarget as HTMLButtonElement).style.borderColor = "#444";
-            }}
-          >
-            入力リセット
-          </button>
-          <button
-            onClick={handleLogout}
-            style={{
-              height: "32px",
-              padding: "0 14px",
-              borderRadius: "6px",
-              border: "1px solid #9B7B2E",
-              background: "transparent",
-              color: "#C9A84C",
-              fontSize: "12px",
-              cursor: "pointer",
-            }}
-            onMouseEnter={(e) => {
-              (e.currentTarget as HTMLButtonElement).style.background = "rgba(201,168,76,0.1)";
-            }}
-            onMouseLeave={(e) => {
-              (e.currentTarget as HTMLButtonElement).style.background = "transparent";
-            }}
-          >
-            ログアウト
-          </button>
-        </div>
+        <button
+          onClick={handleLogout}
+          style={{
+            height: "32px",
+            padding: "0 14px",
+            borderRadius: "6px",
+            border: "1px solid #9B7B2E",
+            background: "transparent",
+            color: "#C9A84C",
+            fontSize: "12px",
+            cursor: "pointer",
+          }}
+          onMouseEnter={(e) => {
+            (e.currentTarget as HTMLButtonElement).style.background = "rgba(201,168,76,0.1)";
+          }}
+          onMouseLeave={(e) => {
+            (e.currentTarget as HTMLButtonElement).style.background = "transparent";
+          }}
+        >
+          ログアウト
+        </button>
       </header>
 
       {/* Main */}
       <main style={{ maxWidth: "1280px", margin: "0 auto", padding: "32px 24px" }}>
+        {/* 顧客切り替えバー */}
+        <CustomerSelector
+          records={records}
+          activeId={activeId}
+          onSelect={handleSelect}
+          onCreate={handleCreate}
+          onDelete={handleDelete}
+        />
+
         {/* 顧客・物件情報フォーム */}
-        <CustomerForm form={form} onChange={handleChange} />
+        <CustomerForm form={active.form} onChange={handleChange} />
+
+        {/* ToDoメモ */}
+        <TodoPanel
+          todos={active.todos}
+          onAdd={handleAddTodo}
+          onToggle={handleToggleTodo}
+          onDelete={handleDeleteTodo}
+        />
 
         {/* エージェント選択 */}
         <section>
@@ -235,7 +292,6 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Footer note */}
         <p
           style={{
             textAlign: "center",
@@ -249,7 +305,6 @@ export default function Home() {
         </p>
       </main>
 
-      {/* プロンプトモーダル */}
       {modal && (
         <PromptModal
           agentName={modal.agentName}
