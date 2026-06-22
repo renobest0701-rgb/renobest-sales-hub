@@ -90,6 +90,7 @@ function CustomerForm({ form, onChange }: Props) {
                 value={form[key]}
                 onChange={(e) => onChange(key, e.target.value)}
                 placeholder={placeholder}
+                autoComplete="off"
                 className={inputBase}
                 style={{ resize: "vertical", minHeight: "72px" }}
               />
@@ -100,6 +101,7 @@ function CustomerForm({ form, onChange }: Props) {
                 value={form[key]}
                 onChange={(e) => onChange(key, e.target.value)}
                 placeholder={placeholder}
+                autoComplete="off"
                 className={inputBase}
                 style={{ height: "40px" }}
               />
