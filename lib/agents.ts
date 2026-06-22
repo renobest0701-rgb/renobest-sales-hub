@@ -35,15 +35,16 @@ export const agentLinks: Record<string, string> = {
   email:     "", // メール作成AI（未設定）
   proposal:  "", // 提案資料制作AI Ver2026.10（未設定）
   overseas:  "https://chatgpt.com/g/g-6a3921e0fba48191bb6e0830a3841e66-renobest-hai-wai-gu-ke-dui-ying-ai", // 海外顧客対応AI
-  contract:  "https://chatgpt.com/g/g-6a3923e52a908191ae66f3727334e177-renobest-qi-yue-bi-yao-shu-lei-an-nei-ai", // 契約・必要書類案内AI
-  finance:   "https://chatgpt.com/g/g-6a3927ac4378819191885389590db053-renobest-zi-jin-ji-hua-zhu-fei-yong-an-nei-ai", // 資金計画・諸費用案内AI
+  contract:      "https://chatgpt.com/g/g-6a3923e52a908191ae66f3727334e177-renobest-qi-yue-bi-yao-shu-lei-an-nei-ai", // 契約・必要書類案内AI
+  finance:       "https://chatgpt.com/g/g-6a3927ac4378819191885389590db053-renobest-zi-jin-ji-hua-zhu-fei-yong-an-nei-ai", // 資金計画・諸費用案内AI
+  propertyStory: "https://chatgpt.com/g/g-6a38abe384188191a7a62f119f59a3b9-renobest-wu-jian-ti-an-sutoriai", // 物件提案ストーリーAI（物件提案AIと同URL）
 };
 
 export const agents: Agent[] = [
   {
     id: "followUp",
-    name: "顧客追客AI",
-    description: "次の行動につながる追客ストーリー・LINE・メール・電話トークを提案",
+    name: "顧客追客ストーリーAI",
+    description: "顧客情報・問い合わせ物件・顧客ランク・最終接触状況をもとにLINE・メール・電話トーク・7日間追客スケジュールを作成",
     url: agentLinks.followUp,
   },
   {
@@ -53,15 +54,21 @@ export const agents: Agent[] = [
     url: agentLinks.property,
   },
   {
+    id: "propertyStory",
+    name: "物件提案ストーリーAI",
+    description: "物件情報・立地・眺望・価格・ターゲット顧客をもとに提案ストーリー・LINE・メール・電話トーク・LP・SNS訴求を作成",
+    url: agentLinks.propertyStory,
+  },
+  {
     id: "selling",
     name: "売却提案AI",
-    description: "売却動機に寄り添った査定・提案・トークスクリプトを生成",
+    description: "売却相談・他社売却中・査定希望・既存顧客に対して売却提案・査定面談・媒介取得へつなぐLINE・メール・電話トークを作成",
     url: agentLinks.selling,
   },
   {
     id: "objection",
     name: "反論処理AI",
-    description: "「高い」「他社で検討」などの反論に対する切り返しトークを生成",
+    description: "断り文句・不安・迷いに対して失注を防ぎ、内見・オンライン面談・再提案へつなぐLINE・メール・電話トークを作成",
     url: agentLinks.objection,
   },
   {
@@ -69,6 +76,24 @@ export const agents: Agent[] = [
     name: "SNS広告AI",
     description: "物件情報・ターゲット・訴求ポイントをもとにInstagram・Facebook・LINE・LP誘導用の広告文・キャッチコピー・CTAを生成",
     url: agentLinks.sns,
+  },
+  {
+    id: "overseas",
+    name: "海外顧客対応AI",
+    description: "購入・売却・法人購入・税金・登記・賃貸運用・民泊運用を日本語・繁体字・簡体字・英語でLINE・メール・電話トーク作成",
+    url: agentLinks.overseas,
+  },
+  {
+    id: "contract",
+    name: "契約・必要書類案内AI",
+    description: "売買・賃貸・法人購入・海外顧客・売却・媒介契約に関する必要書類・契約前確認事項・決済準備の案内文を作成",
+    url: agentLinks.contract,
+  },
+  {
+    id: "finance",
+    name: "資金計画・諸費用案内AI",
+    description: "購入諸費用・月々返済・投資収支・運営シミュレーション・顧客向け説明文を作成",
+    url: agentLinks.finance,
   },
   {
     id: "lp",
@@ -87,24 +112,6 @@ export const agents: Agent[] = [
     name: "提案資料制作AI Ver2026.10",
     description: "顧客向け提案資料のストーリー・構成・文章を生成",
     url: agentLinks.proposal,
-  },
-  {
-    id: "overseas",
-    name: "海外顧客対応AI",
-    description: "購入・売却・税金・登記・賃貸運用などを日本語・繁体字・簡体字・英語でLINE・メール・電話トーク作成",
-    url: agentLinks.overseas,
-  },
-  {
-    id: "contract",
-    name: "契約・必要書類案内AI",
-    description: "不動産売買・賃貸・法人購入・海外顧客向けの必要書類・契約前確認事項・決済準備を案内",
-    url: agentLinks.contract,
-  },
-  {
-    id: "finance",
-    name: "資金計画・諸費用案内AI",
-    description: "購入諸費用・月々返済・投資収支・運営シミュレーションを顧客向けに分かりやすく説明",
-    url: agentLinks.finance,
   },
 ];
 
