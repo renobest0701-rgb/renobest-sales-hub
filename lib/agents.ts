@@ -34,6 +34,7 @@ export const agentLinks: Record<string, string> = {
   lp:        "", // LP制作AI（未設定）
   email:     "", // メール作成AI（未設定）
   proposal:  "", // 提案資料制作AI Ver2026.10（未設定）
+  overseas:  "https://chatgpt.com/g/g-6a3921e0fba48191bb6e0830a3841e66-renobest-hai-wai-gu-ke-dui-ying-ai", // 海外顧客対応AI
 };
 
 export const agents: Agent[] = [
@@ -84,6 +85,12 @@ export const agents: Agent[] = [
     name: "提案資料制作AI Ver2026.10",
     description: "顧客向け提案資料のストーリー・構成・文章を生成",
     url: agentLinks.proposal,
+  },
+  {
+    id: "overseas",
+    name: "海外顧客対応AI",
+    description: "購入・売却・税金・登記・賃貸運用などを日本語・繁体字・簡体字・英語でLINE・メール・電話トーク作成",
+    url: agentLinks.overseas,
   },
 ];
 
