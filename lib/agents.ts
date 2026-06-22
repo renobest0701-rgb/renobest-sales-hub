@@ -30,7 +30,7 @@ export const agentLinks: Record<string, string> = {
   property:  "https://chatgpt.com/g/g-6a38abe384188191a7a62f119f59a3b9-renobest-wu-jian-ti-an-sutoriai", // 物件提案AI
   selling:   "https://chatgpt.com/g/g-6a38b4c212b881918754e15f48677467-renobest-mai-que-ti-an-ai",       // 売却提案AI
   objection: "https://chatgpt.com/g/g-6a38b168efb8819191cfb2a744af5dfe-renobest-fan-lun-chu-li-ai",     // 反論処理AI
-  sns:       "", // SNS広告AI（未設定）
+  sns:       "https://chatgpt.com/g/g-6a391fd071f48191b1bb18a7734d732a-renobest-snsguang-gao-ai", // SNS広告AI
   lp:        "", // LP制作AI（未設定）
   email:     "", // メール作成AI（未設定）
   proposal:  "", // 提案資料制作AI Ver2026.10（未設定）
@@ -65,7 +65,7 @@ export const agents: Agent[] = [
   {
     id: "sns",
     name: "SNS広告AI",
-    description: "物件・サービスのInstagram・X・Facebook広告文を生成",
+    description: "物件情報・ターゲット・訴求ポイントをもとにInstagram・Facebook・LINE・LP誘導用の広告文・キャッチコピー・CTAを生成",
     url: agentLinks.sns,
   },
   {
