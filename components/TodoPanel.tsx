@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { memo, useState } from "react";
 import { TodoItem } from "@/lib/storage";
 
 type Props = {
@@ -10,7 +10,7 @@ type Props = {
   onDelete: (id: string) => void;
 };
 
-export default function TodoPanel({ todos, onAdd, onToggle, onDelete }: Props) {
+function TodoPanel({ todos, onAdd, onToggle, onDelete }: Props) {
   const [input, setInput] = useState("");
 
   const handleAdd = () => {
@@ -65,15 +65,12 @@ export default function TodoPanel({ todos, onAdd, onToggle, onDelete }: Props) {
         )}
       </h2>
 
-      {/* 入力エリア */}
       <div style={{ display: "flex", gap: "8px", marginBottom: "20px" }}>
         <input
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") handleAdd();
-          }}
+          onKeyDown={(e) => { if (e.key === "Enter") handleAdd(); }}
           placeholder="ToDoを入力してEnterまたは追加ボタン"
           style={{
             flex: 1,
@@ -88,24 +85,13 @@ export default function TodoPanel({ todos, onAdd, onToggle, onDelete }: Props) {
         />
         <button
           onClick={handleAdd}
-          style={{
-            height: "40px",
-            padding: "0 18px",
-            borderRadius: "8px",
-            border: "none",
-            background: "linear-gradient(135deg, #9B7B2E 0%, #C9A84C 50%, #E8D08A 100%)",
-            color: "#FFFFFF",
-            fontWeight: 700,
-            fontSize: "13px",
-            cursor: "pointer",
-            whiteSpace: "nowrap",
-          }}
+          className="btn-gold"
+          style={{ height: "40px", padding: "0 18px", borderRadius: "8px", fontSize: "13px", whiteSpace: "nowrap" }}
         >
           追加
         </button>
       </div>
 
-      {/* 未完了リスト */}
       {todos.length === 0 && (
         <p style={{ fontSize: "13px", color: "#BBBBBB", textAlign: "center", padding: "20px 0" }}>
           ToDoはまだありません
@@ -118,7 +104,6 @@ export default function TodoPanel({ todos, onAdd, onToggle, onDelete }: Props) {
         ))}
       </div>
 
-      {/* 完了済みリスト */}
       {done.length > 0 && (
         <div style={{ marginTop: "16px" }}>
           <p style={{ fontSize: "11px", color: "#BBBBBB", marginBottom: "8px", letterSpacing: "0.05em" }}>
@@ -135,7 +120,7 @@ export default function TodoPanel({ todos, onAdd, onToggle, onDelete }: Props) {
   );
 }
 
-function TodoRow({
+const TodoRow = memo(function TodoRow({
   todo,
   onToggle,
   onDelete,
@@ -154,25 +139,11 @@ function TodoRow({
         borderRadius: "8px",
         background: todo.done ? "#FAFAF8" : "#FFFFFF",
         border: `1px solid ${todo.done ? "#EBEBEB" : "#E8E8E4"}`,
-        transition: "all 0.15s",
       }}
     >
-      {/* チェックボックス */}
       <button
         onClick={() => onToggle(todo.id)}
-        style={{
-          width: "20px",
-          height: "20px",
-          borderRadius: "50%",
-          border: `2px solid ${todo.done ? "#C9A84C" : "#CCCCCC"}`,
-          background: todo.done ? "#C9A84C" : "transparent",
-          cursor: "pointer",
-          flexShrink: 0,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          transition: "all 0.15s",
-        }}
+        className={`todo-check ${todo.done ? "done" : "pending"}`}
       >
         {todo.done && (
           <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
@@ -181,7 +152,6 @@ function TodoRow({
         )}
       </button>
 
-      {/* テキスト */}
       <span
         style={{
           flex: 1,
@@ -194,29 +164,15 @@ function TodoRow({
         {todo.text}
       </span>
 
-      {/* 削除 */}
       <button
         onClick={() => onDelete(todo.id)}
-        style={{
-          width: "24px",
-          height: "24px",
-          borderRadius: "4px",
-          border: "none",
-          background: "transparent",
-          color: "#CCCCCC",
-          fontSize: "16px",
-          cursor: "pointer",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          lineHeight: 1,
-          flexShrink: 0,
-        }}
-        onMouseEnter={(e) => ((e.currentTarget as HTMLButtonElement).style.color = "#E05555")}
-        onMouseLeave={(e) => ((e.currentTarget as HTMLButtonElement).style.color = "#CCCCCC")}
+        className="btn-x"
+        style={{ width: "24px", height: "24px", fontSize: "16px" }}
       >
         ×
       </button>
     </div>
   );
-}
+});
+
+export default memo(TodoPanel);

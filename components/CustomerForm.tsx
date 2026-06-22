@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import { CustomerForm as CustomerFormType } from "@/lib/agents";
 
 type Props = {
@@ -33,7 +34,7 @@ const fields: FieldConfig[] = [
 const inputBase =
   "w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm text-gray-800 transition-colors placeholder:text-gray-400";
 
-export default function CustomerForm({ form, onChange }: Props) {
+function CustomerForm({ form, onChange }: Props) {
   return (
     <section
       style={{
@@ -109,3 +110,5 @@ export default function CustomerForm({ form, onChange }: Props) {
     </section>
   );
 }
+
+export default memo(CustomerForm);

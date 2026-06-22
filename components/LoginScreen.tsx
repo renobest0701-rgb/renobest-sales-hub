@@ -25,8 +25,7 @@ export default function LoginScreen({ onSuccess }: Props) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const correct =
-      process.env.NEXT_PUBLIC_HUB_PASSWORD || FALLBACK_PASSWORD;
+    const correct = process.env.NEXT_PUBLIC_HUB_PASSWORD || FALLBACK_PASSWORD;
 
     if (password === correct) {
       sessionStorage.setItem(SESSION_KEY, "1");
@@ -51,15 +50,13 @@ export default function LoginScreen({ onSuccess }: Props) {
         padding: "24px",
       }}
     >
-      {/* Logo area */}
       <div style={{ textAlign: "center", marginBottom: "40px" }}>
         <div
           style={{
             display: "inline-block",
             width: "48px",
             height: "4px",
-            background:
-              "linear-gradient(135deg, #9B7B2E 0%, #C9A84C 50%, #E8D08A 100%)",
+            background: "linear-gradient(135deg, #9B7B2E 0%, #C9A84C 50%, #E8D08A 100%)",
             borderRadius: "2px",
             marginBottom: "16px",
           }}
@@ -75,23 +72,14 @@ export default function LoginScreen({ onSuccess }: Props) {
         >
           RENOBEST
         </p>
-        <h1
-          style={{
-            fontSize: "22px",
-            fontWeight: 700,
-            color: "#FFFFFF",
-            letterSpacing: "0.06em",
-          }}
-        >
+        <h1 style={{ fontSize: "22px", fontWeight: 700, color: "#FFFFFF", letterSpacing: "0.06em" }}>
           営業支援Hub
         </h1>
-        <p style={{ fontSize: "12px", color: "#666", marginTop: "4px" }}>
-          社内専用ツール
-        </p>
+        <p style={{ fontSize: "12px", color: "#666", marginTop: "4px" }}>社内専用ツール</p>
       </div>
 
-      {/* Login card */}
       <div
+        className={shaking ? "shake" : ""}
         style={{
           background: "#141414",
           border: "1px solid #2A2A2A",
@@ -99,17 +87,9 @@ export default function LoginScreen({ onSuccess }: Props) {
           padding: "40px 36px",
           width: "100%",
           maxWidth: "360px",
-          animation: shaking ? "shake 0.4s ease" : "none",
         }}
       >
-        <p
-          style={{
-            fontSize: "13px",
-            color: "#888",
-            textAlign: "center",
-            marginBottom: "28px",
-          }}
-        >
+        <p style={{ fontSize: "13px", color: "#888", textAlign: "center", marginBottom: "28px" }}>
           パスワードを入力してください
         </p>
 
@@ -117,67 +97,27 @@ export default function LoginScreen({ onSuccess }: Props) {
           <input
             type="password"
             value={password}
-            onChange={(e) => {
-              setPassword(e.target.value);
-              setError(false);
-            }}
+            onChange={(e) => { setPassword(e.target.value); setError(false); }}
             placeholder="パスワード"
             autoFocus
-            style={{
-              height: "48px",
-              borderRadius: "8px",
-              border: error ? "1px solid #E05555" : "1px solid #333",
-              background: "#1E1E1E",
-              color: "#FFFFFF",
-              padding: "0 16px",
-              fontSize: "15px",
-              letterSpacing: "0.1em",
-              transition: "border-color 0.15s",
-            }}
+            className={`login-input${error ? " error" : ""}`}
           />
 
           {error && (
-            <p
-              style={{
-                fontSize: "12px",
-                color: "#E05555",
-                textAlign: "center",
-                margin: "-4px 0",
-              }}
-            >
+            <p style={{ fontSize: "12px", color: "#E05555", textAlign: "center", margin: "-4px 0" }}>
               パスワードが違います
             </p>
           )}
 
           <button
             type="submit"
-            style={{
-              height: "48px",
-              borderRadius: "8px",
-              border: "none",
-              background:
-                "linear-gradient(135deg, #9B7B2E 0%, #C9A84C 50%, #E8D08A 100%)",
-              color: "#FFFFFF",
-              fontWeight: 700,
-              fontSize: "14px",
-              cursor: "pointer",
-              letterSpacing: "0.05em",
-            }}
+            className="btn-gold"
+            style={{ height: "48px", borderRadius: "8px", fontSize: "14px", letterSpacing: "0.05em" }}
           >
             ログイン
           </button>
         </form>
       </div>
-
-      <style>{`
-        @keyframes shake {
-          0%, 100% { transform: translateX(0); }
-          20% { transform: translateX(-8px); }
-          40% { transform: translateX(8px); }
-          60% { transform: translateX(-6px); }
-          80% { transform: translateX(6px); }
-        }
-      `}</style>
     </div>
   );
 }

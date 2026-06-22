@@ -226,22 +226,8 @@ export default function Home() {
 
         <button
           onClick={handleLogout}
-          style={{
-            height: "32px",
-            padding: "0 14px",
-            borderRadius: "6px",
-            border: "1px solid #9B7B2E",
-            background: "transparent",
-            color: "#C9A84C",
-            fontSize: "12px",
-            cursor: "pointer",
-          }}
-          onMouseEnter={(e) => {
-            (e.currentTarget as HTMLButtonElement).style.background = "rgba(201,168,76,0.1)";
-          }}
-          onMouseLeave={(e) => {
-            (e.currentTarget as HTMLButtonElement).style.background = "transparent";
-          }}
+          className="btn-outline-gold"
+          style={{ height: "32px", padding: "0 14px", borderRadius: "6px", fontSize: "12px" }}
         >
           ログアウト
         </button>
@@ -257,9 +243,10 @@ export default function Home() {
           onDelete={handleDelete}
         />
 
-        <CustomerForm form={active.form} onChange={handleChange} />
+        <CustomerForm key={activeId} form={active.form} onChange={handleChange} />
 
         <TodoPanel
+          key={`todo-${activeId}`}
           todos={active.todos}
           onAdd={handleAddTodo}
           onToggle={handleToggleTodo}
