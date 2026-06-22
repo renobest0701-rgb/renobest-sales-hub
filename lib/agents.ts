@@ -27,7 +27,7 @@ export type Agent = {
 // URLはここで一括管理。変更はこのオブジェクトだけ修正すればOK。
 export const agentLinks: Record<string, string> = {
   followUp:  "https://chatgpt.com/g/g-6a388498a7a88191900ec299a2b13a6e-renobest-gu-ke-zhui-ke-sutoriai", // 顧客追客AI
-  property:  "https://chatgpt.com/g/g-6a38abe384188191a7a62f119f59a3b9-renobest-wu-jian-ti-an-sutoriai", // 物件提案AI
+  property:  "", // 物件提案AI（削除済み・propertyStoryを使用）
   selling:   "https://chatgpt.com/g/g-6a38b4c212b881918754e15f48677467-renobest-mai-que-ti-an-ai",       // 売却提案AI
   objection: "https://chatgpt.com/g/g-6a38b168efb8819191cfb2a744af5dfe-renobest-fan-lun-chu-li-ai",     // 反論処理AI
   sns:       "https://chatgpt.com/g/g-6a391fd071f48191b1bb18a7734d732a-renobest-snsguang-gao-ai", // SNS広告AI
@@ -46,12 +46,6 @@ export const agents: Agent[] = [
     name: "顧客追客ストーリーAI",
     description: "顧客情報・問い合わせ物件・顧客ランク・最終接触状況をもとにLINE・メール・電話トーク・7日間追客スケジュールを作成",
     url: agentLinks.followUp,
-  },
-  {
-    id: "property",
-    name: "物件提案AI",
-    description: "顧客のニーズに合った物件提案文・比較資料の文面を生成",
-    url: agentLinks.property,
   },
   {
     id: "propertyStory",
