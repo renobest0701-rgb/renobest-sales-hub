@@ -1,36 +1,99 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# RENOBEST営業支援Hub v1
 
-## Getting Started
+RENOBESTの営業担当者が、顧客情報・物件情報を入力し、目的に応じたAIエージェント用プロンプトを自動生成して、各エージェントへ移動できる社内用営業支援ツール。
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## 主な機能
+
+- 顧客・物件情報入力（13項目）
+- 入力内容のlocalStorage自動保存・復元
+- エージェント別プロンプト自動生成
+- プロンプトワンクリックコピー
+- 各AIエージェントへのリンク（別タブで開く）
+- URL未設定エージェントのボタン無効化
+
+---
+
+## 登録済みエージェント
+
+| エージェント | 状態 |
+|---|---|
+| 顧客追客AI | ✅ URL設定済 |
+| 物件提案AI | ✅ URL設定済 |
+| 売却提案AI | ✅ URL設定済 |
+| 反論処理AI | ✅ URL設定済 |
+
+## 未設定エージェント
+
+| エージェント | 状態 |
+|---|---|
+| SNS広告AI | 🔲 URL未設定 |
+| LP制作AI | 🔲 URL未設定 |
+| メール作成AI | 🔲 URL未設定 |
+| 提案資料制作AI Ver2026.10 | 🔲 URL未設定 |
+
+---
+
+## エージェントURL設定方法
+
+`lib/agents.ts` の `agentLinks` オブジェクトにURLを設定するだけで反映されます。
+
+```ts
+export const agentLinks: Record<string, string> = {
+  followUp:  "https://...",  // 顧客追客AI
+  property:  "https://...",  // 物件提案AI
+  selling:   "https://...",  // 売却提案AI
+  objection: "https://...",  // 反論処理AI
+  sns:       "https://...",  // SNS広告AI
+  lp:        "https://...",  // LP制作AI
+  email:     "https://...",  // メール作成AI
+  proposal:  "https://...",  // 提案資料制作AI Ver2026.10
+};
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 今後の追加予定
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- ToDoアプリ連携
+- 顧客データ保存
+- 物件データ保存
+- 提案資料制作AI Ver2026.10 連携
+- LINE・メール連携
+- KASHIKA連携
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+## 技術スタック
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- Next.js 16 (App Router)
+- TypeScript
+- Tailwind CSS
+- localStorage（入力内容の自動保存）
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## ローカル開発
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+cd renobest-sales-hub
+npm install
+npm run dev
+# → http://localhost:3000
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Vercelデプロイ
+
+```bash
+# Vercel CLIがない場合
+npm i -g vercel
+
+# 初回デプロイ
+vercel
+
+# 本番デプロイ
+vercel --prod
+```
+
+> 環境変数は不要です。agentLinks のURLはコード内で管理しています。

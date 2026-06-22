@@ -1,65 +1,229 @@
-import Image from "next/image";
+"use client";
+
+import { useState, useCallback } from "react";
+import CustomerForm from "@/components/CustomerForm";
+import AgentCard from "@/components/AgentCard";
+import PromptModal from "@/components/PromptModal";
+import { CustomerForm as CustomerFormType, agents, generatePrompt } from "@/lib/agents";
+
+const STORAGE_KEY = "renobest-sales-hub-form";
+
+const defaultForm: CustomerFormType = {
+  customerName: "",
+  customerType: "",
+  propertyName: "",
+  location: "",
+  purpose: "",
+  budget: "",
+  interestPoints: "",
+  concerns: "",
+  sentContent: "",
+  customerResponse: "",
+  lastContactDate: "",
+  nextAction: "",
+  notes: "",
+};
+
+type ModalState = {
+  agentId: string;
+  agentName: string;
+  prompt: string;
+  agentUrl: string;
+} | null;
+
+function loadSavedForm(): CustomerFormType {
+  if (typeof window === "undefined") return defaultForm;
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) return { ...defaultForm, ...JSON.parse(saved) };
+  } catch {}
+  return defaultForm;
+}
 
 export default function Home() {
+  const [form, setForm] = useState<CustomerFormType>(loadSavedForm);
+  const [modal, setModal] = useState<ModalState>(null);
+
+  // 入力変更 → localStorage 自動保存
+  const handleChange = useCallback((field: keyof CustomerFormType, value: string) => {
+    setForm((prev) => {
+      const next = { ...prev, [field]: value };
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+      } catch {}
+      return next;
+    });
+  }, []);
+
+  const handleGenerate = useCallback(
+    (agentId: string) => {
+      const agent = agents.find((a) => a.id === agentId);
+      if (!agent) return;
+      setModal({
+        agentId,
+        agentName: agent.name,
+        prompt: generatePrompt(agentId, form),
+        agentUrl: agent.url,
+      });
+    },
+    [form]
+  );
+
+  const handleReset = () => {
+    if (!confirm("入力内容をすべてリセットしますか？")) return;
+    setForm(defaultForm);
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+    } catch {}
+  };
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+    <div style={{ minHeight: "100vh", background: "#F5F5F0" }}>
+      {/* Header */}
+      <header
+        style={{
+          background: "#0A0A0A",
+          borderBottom: "3px solid #C9A84C",
+          padding: "0 24px",
+          height: "64px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          position: "sticky",
+          top: 0,
+          zIndex: 100,
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          <div
+            style={{
+              width: "6px",
+              height: "32px",
+              background: "linear-gradient(135deg, #9B7B2E 0%, #C9A84C 50%, #E8D08A 100%)",
+              borderRadius: "3px",
+            }}
+          />
+          <div>
+            <p
+              style={{
+                fontSize: "10px",
+                color: "#C9A84C",
+                fontWeight: 600,
+                letterSpacing: "0.15em",
+                lineHeight: 1,
+                marginBottom: "2px",
+              }}
             >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+              RENOBEST
+            </p>
+            <h1
+              style={{
+                fontSize: "17px",
+                fontWeight: 700,
+                color: "#FFFFFF",
+                letterSpacing: "0.05em",
+                lineHeight: 1,
+              }}
             >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+              営業支援Hub
+              <span
+                style={{
+                  fontSize: "10px",
+                  fontWeight: 400,
+                  color: "#888",
+                  marginLeft: "8px",
+                  letterSpacing: "0.02em",
+                }}
+              >
+                v1
+              </span>
+            </h1>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+
+        <button
+          onClick={handleReset}
+          style={{
+            height: "32px",
+            padding: "0 14px",
+            borderRadius: "6px",
+            border: "1px solid #444",
+            background: "transparent",
+            color: "#888",
+            fontSize: "12px",
+            cursor: "pointer",
+          }}
+          onMouseEnter={(e) => {
+            (e.currentTarget as HTMLButtonElement).style.color = "#FFFFFF";
+            (e.currentTarget as HTMLButtonElement).style.borderColor = "#FFFFFF";
+          }}
+          onMouseLeave={(e) => {
+            (e.currentTarget as HTMLButtonElement).style.color = "#888";
+            (e.currentTarget as HTMLButtonElement).style.borderColor = "#444";
+          }}
+        >
+          入力リセット
+        </button>
+      </header>
+
+      {/* Main */}
+      <main style={{ maxWidth: "1280px", margin: "0 auto", padding: "32px 24px" }}>
+        {/* 顧客・物件情報フォーム */}
+        <CustomerForm form={form} onChange={handleChange} />
+
+        {/* エージェント選択 */}
+        <section>
+          <h2
+            style={{
+              fontSize: "18px",
+              fontWeight: 700,
+              color: "#1A1A1A",
+              marginBottom: "20px",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+            }}
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            <span style={{ color: "#C9A84C" }}>▍</span>
+            AIエージェントを選ぶ
+          </h2>
+
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
+              gap: "20px",
+            }}
           >
-            Documentation
-          </a>
-        </div>
+            {agents.map((agent) => (
+              <AgentCard key={agent.id} agent={agent} onGenerate={handleGenerate} />
+            ))}
+          </div>
+        </section>
+
+        {/* Footer note */}
+        <p
+          style={{
+            textAlign: "center",
+            fontSize: "11px",
+            color: "#AAAAAA",
+            marginTop: "48px",
+            letterSpacing: "0.05em",
+          }}
+        >
+          入力内容はブラウザに自動保存されます。機密情報の取り扱いにご注意ください。
+        </p>
       </main>
+
+      {/* プロンプトモーダル */}
+      {modal && (
+        <PromptModal
+          agentName={modal.agentName}
+          prompt={modal.prompt}
+          agentUrl={modal.agentUrl}
+          onClose={() => setModal(null)}
+        />
+      )}
     </div>
   );
 }
