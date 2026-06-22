@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import { Agent } from "@/lib/agents";
 
 type Props = {
@@ -7,7 +8,7 @@ type Props = {
   onGenerate: (agentId: string) => void;
 };
 
-export default function AgentCard({ agent, onGenerate }: Props) {
+function AgentCard({ agent, onGenerate }: Props) {
   return (
     <div
       style={{
@@ -130,3 +131,5 @@ export default function AgentCard({ agent, onGenerate }: Props) {
     </div>
   );
 }
+
+export default memo(AgentCard);

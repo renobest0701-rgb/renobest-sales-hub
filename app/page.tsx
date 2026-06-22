@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef, useMemo, useEffect } from "react";
 import CustomerForm from "@/components/CustomerForm";
 import AgentCard from "@/components/AgentCard";
 import PromptModal from "@/components/PromptModal";
@@ -29,29 +29,44 @@ type ModalState = {
   agentUrl: string;
 } | null;
 
-function initRecords() {
-  return loadRecords();
+// 初期状態を1回のlocalStorage読み込みで取得
+function initState(): { records: CustomerRecord[]; activeId: string } {
+  const records = loadRecords();
+  const activeId = loadActiveId(records);
+  return { records, activeId };
 }
 
-function initActiveId(records: CustomerRecord[]) {
-  return loadActiveId(records);
+// localStorage書き込みをデバウンス（300ms）
+let saveTimer: ReturnType<typeof setTimeout> | null = null;
+function debouncedSave(records: CustomerRecord[]) {
+  if (saveTimer) clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => saveRecords(records), 300);
 }
 
 export default function Home() {
-  const [authed, setAuthed]   = useState<boolean>(isAuthenticated);
-  const [records, setRecords] = useState<CustomerRecord[]>(initRecords);
-  const [activeId, setActiveId] = useState<string>(() => initActiveId(loadRecords()));
-  const [modal, setModal]     = useState<ModalState>(null);
+  const [authed, setAuthed] = useState<boolean>(isAuthenticated);
+  const [{ records: initRec, activeId: initActiveId }] = useState<{ records: CustomerRecord[]; activeId: string }>(initState);
+  const [records, setRecords] = useState<CustomerRecord[]>(initRec);
+  const [activeId, setActiveId] = useState<string>(initActiveId);
+  const [modal, setModal] = useState<ModalState>(null);
 
-  // アクティブレコード取得
-  const active = records.find((r) => r.id === activeId) ?? records[0];
+  // activeのrefを持つことでhandleGenerateを安定させる
+  const activeRef = useRef<CustomerRecord | undefined>(undefined);
+  const active = useMemo(
+    () => records.find((r) => r.id === activeId) ?? records[0],
+    [records, activeId]
+  );
+  // refをレンダー後に更新（render中の直接代入を避ける）
+  useEffect(() => {
+    activeRef.current = active;
+  });
 
-  // レコード更新 + 保存
+  // レコード更新 + デバウンス保存
   const patchActive = useCallback(
     (patch: Partial<Omit<CustomerRecord, "id">>) => {
       setRecords((prev) => {
         const next = updateRecord(prev, activeId, patch);
-        saveRecords(next);
+        debouncedSave(next);
         return next;
       });
     },
@@ -61,26 +76,23 @@ export default function Home() {
   // フォーム変更
   const handleChange = useCallback(
     (field: keyof CustomerRecord["form"], value: string) => {
-      if (!active) return;
-      patchActive({ form: { ...active.form, [field]: value } });
+      if (!activeRef.current) return;
+      patchActive({ form: { ...activeRef.current.form, [field]: value } });
     },
-    [active, patchActive]
+    [patchActive]
   );
 
-  // プロンプト生成
-  const handleGenerate = useCallback(
-    (agentId: string) => {
-      const agent = agents.find((a) => a.id === agentId);
-      if (!agent || !active) return;
-      setModal({
-        agentId,
-        agentName: agent.name,
-        prompt: generatePrompt(agentId, active.form),
-        agentUrl: agent.url,
-      });
-    },
-    [active]
-  );
+  // プロンプト生成（refを使うことでagents再レンダリングを防ぐ）
+  const handleGenerate = useCallback((agentId: string) => {
+    const agent = agents.find((a) => a.id === agentId);
+    if (!agent || !activeRef.current) return;
+    setModal({
+      agentId,
+      agentName: agent.name,
+      prompt: generatePrompt(agentId, activeRef.current.form),
+      agentUrl: agent.url,
+    });
+  }, []); // 依存なし → AgentCardが再レンダリングされない
 
   // 顧客切り替え
   const handleSelect = useCallback((id: string) => {
@@ -101,47 +113,42 @@ export default function Home() {
   }, []);
 
   // 顧客削除
-  const handleDelete = useCallback(
-    (id: string) => {
-      setRecords((prev) => {
-        const next = deleteRecord(prev, id);
-        saveRecords(next);
-        // 削除後は先頭へ
-        const newActive = next[0]?.id ?? "";
-        setActiveId(newActive);
-        saveActiveId(newActive);
-        return next;
-      });
-    },
-    []
-  );
+  const handleDelete = useCallback((id: string) => {
+    setRecords((prev) => {
+      const next = deleteRecord(prev, id);
+      saveRecords(next);
+      const newActive = next[0]?.id ?? "";
+      setActiveId(newActive);
+      saveActiveId(newActive);
+      return next;
+    });
+  }, []);
 
   // ToDo操作
   const handleAddTodo = useCallback(
     (text: string) => {
-      if (!active) return;
-      patchActive({ todos: addTodo(active.todos, text) });
+      if (!activeRef.current) return;
+      patchActive({ todos: addTodo(activeRef.current.todos, text) });
     },
-    [active, patchActive]
+    [patchActive]
   );
 
   const handleToggleTodo = useCallback(
     (todoId: string) => {
-      if (!active) return;
-      patchActive({ todos: toggleTodo(active.todos, todoId) });
+      if (!activeRef.current) return;
+      patchActive({ todos: toggleTodo(activeRef.current.todos, todoId) });
     },
-    [active, patchActive]
+    [patchActive]
   );
 
   const handleDeleteTodo = useCallback(
     (todoId: string) => {
-      if (!active) return;
-      patchActive({ todos: deleteTodo(active.todos, todoId) });
+      if (!activeRef.current) return;
+      patchActive({ todos: deleteTodo(activeRef.current.todos, todoId) });
     },
-    [active, patchActive]
+    [patchActive]
   );
 
-  // ログアウト
   const handleLogout = () => {
     logout();
     setAuthed(false);
@@ -242,7 +249,6 @@ export default function Home() {
 
       {/* Main */}
       <main style={{ maxWidth: "1280px", margin: "0 auto", padding: "32px 24px" }}>
-        {/* 顧客切り替えバー */}
         <CustomerSelector
           records={records}
           activeId={activeId}
@@ -251,10 +257,8 @@ export default function Home() {
           onDelete={handleDelete}
         />
 
-        {/* 顧客・物件情報フォーム */}
         <CustomerForm form={active.form} onChange={handleChange} />
 
-        {/* ToDoメモ */}
         <TodoPanel
           todos={active.todos}
           onAdd={handleAddTodo}
@@ -262,7 +266,6 @@ export default function Home() {
           onDelete={handleDeleteTodo}
         />
 
-        {/* エージェント選択 */}
         <section>
           <h2
             style={{
